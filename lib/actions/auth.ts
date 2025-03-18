@@ -76,11 +76,17 @@ export const signUp = async (params: AuthCredentials) => {
       },
     });
 
-    await signInWithCredentials({ email, password });
+    const signInResult = await signInWithCredentials({ email, password });
 
-    return { success: true };
+    // If sign-in is successful, send a success response
+    if (signInResult.success) {
+      return { success: true }; // Indicate success
+    }
+
+    return { success: false, error: signInResult.error }; // Return sign-in error if it fails
   } catch (error) {
     console.log(error, "Signup error");
     return { success: false, error: "Signup error" };
   }
 };
+
