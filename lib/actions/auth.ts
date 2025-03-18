@@ -68,25 +68,29 @@ export const signUp = async (params: AuthCredentials) => {
       universityCard,
     });
 
-    await workflowClient.trigger({
-      url: `${config.env.prodApiEndpoint}/api/workflows/onboarding`,
-      body: {
-        email,
-        fullName,
-      },
-    });
-
-    const signInResult = await signInWithCredentials({ email, password });
-
-    // If sign-in is successful, send a success response
-    if (signInResult.success) {
-      return { success: true }; // Indicate success
+    // Try to trigger the workflow with error handling
+    try {
+      await workflowClient.trigger({
+        url: `${config.env.prodApiEndpoint}/api/workflows/onboarding`, // Ensure this URL is correct
+        body: {
+          email,
+          fullName,
+        },
+      });
+    } catch (workflowError) {
+      console.log("Workflow client trigger error:", workflowError);
+      return { success: false, error: "Failed to trigger workflow" };
     }
 
-    return { success: false, error: signInResult.error }; // Return sign-in error if it fails
+    // Attempt to sign in after sign-up
+    const signInResult = await signInWithCredentials({ email, password });
+    if (!signInResult.success) {
+      return { success: false, error: "Sign-in failed after sign-up" };
+    }
+
+    return { success: true }; // Everything worked
   } catch (error) {
     console.log(error, "Signup error");
     return { success: false, error: "Signup error" };
   }
 };
-
