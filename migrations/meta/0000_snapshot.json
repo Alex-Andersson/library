@@ -1,5 +1,5 @@
 {
-  "id": "a69e06ed-20ca-48fa-a362-3aa1fd8e2e68",
+  "id": "b60c9b6b-0a5a-4f88-87d7-143c61ae0c81",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -231,7 +231,7 @@
           "name": "university_card",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "status": {
           "name": "status",
