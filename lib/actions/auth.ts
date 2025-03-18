@@ -12,7 +12,7 @@ import config from "@/lib/config";
 import ratelimit from "../ratelimit";
 
 export const signInWithCredentials = async (
-  params: Pick<AuthCredentials, "email" | "password">,
+  params: Pick<AuthCredentials, "email" | "password">
 ) => {
   const { email, password } = params;
 
@@ -34,13 +34,13 @@ export const signInWithCredentials = async (
 
     return { success: true };
   } catch (error) {
-    console.log(error, "Signin error");
+    console.error("Sign-in error:", error);
     return { success: false, error: "Signin error" };
   }
 };
 
 export const signUp = async (params: AuthCredentials) => {
-  const { fullName, email, universityId, password, universityCard } = params;
+  const { fullName, email, universityId, password } = params;
 
   const ip = (await headers()).get("x-forwarded-for") || "127.0.0.1";
   const { success } = await ratelimit.limit(ip);
@@ -65,22 +65,26 @@ export const signUp = async (params: AuthCredentials) => {
       email,
       universityId,
       password: hashedPassword,
-      universityCard,
     });
 
-    // Try to trigger the workflow with error handling
-    try {
-      await workflowClient.trigger({
-        url: `${config.env.prodApiEndpoint}/api/workflows/onboarding`, // Ensure this URL is correct
-        body: {
-          email,
-          fullName,
-        },
-      });
-    } catch (workflowError) {
-      console.log("Workflow client trigger error:", workflowError);
-      return { success: false, error: "Failed to trigger workflow" };
-    }
+    // // Ensure correct API endpoint format
+    // const apiEndpoint = config.env.prodApiEndpoint.startsWith("http")
+    //   ? config.env.prodApiEndpoint
+    //   : `https://${config.env.prodApiEndpoint}`;
+
+    // // Debugging: log workflow request
+    // console.log("Triggering workflow for:", email, fullName);
+
+    // try {
+    //   const workflowResponse = await workflowClient.trigger({
+    //     url: `${apiEndpoint}/api/workflows/onboarding`,
+    //     body: { email, fullName },
+    //   });
+    //   console.log("Workflow triggered successfully:", workflowResponse);
+    // } catch (workflowError) {
+    //   console.error("Failed to trigger workflow:", workflowError);
+    //   return { success: false, error: "Failed to trigger workflow" };
+    // }
 
     // Attempt to sign in after sign-up
     const signInResult = await signInWithCredentials({ email, password });
@@ -88,9 +92,9 @@ export const signUp = async (params: AuthCredentials) => {
       return { success: false, error: "Sign-in failed after sign-up" };
     }
 
-    return { success: true }; // Everything worked
+    return { success: true };
   } catch (error) {
-    console.log(error, "Signup error");
+    console.error("Signup error:", error);
     return { success: false, error: "Signup error" };
   }
 };
